@@ -1,0 +1,142 @@
+# 2015-03-27 #
+
+I had an interesting conversation with Clinton Selke, who suggested some minor changes in the monad transformers and contributed code for MaybeT and StateT, as well as the MonadState class, so you can see some substantial progress in this area.
+
+I'm very glad to see that people use code or ideas from this project, and I'll definitely continue to work on it.
+
+One thing I don't want to postpone is the GitHub migration, so expect this to be the last entry on Google Code.
+
+# 2013-09-10 #
+
+I work sporadic on highJ. I added some stuff and did a lot of refactoring. I think I'm close to have something like a coherent "core". Probably I should throw away some not-so-related stuff, stop to add new features, and start to "polish". Especially I need more tests, and a
+good show case.
+
+# 2013-06-16 #
+
+Whoa, it took forever to write `CokleisliArrow.split()`. I'm still not sure how it works, but GHCI's `:t` led the way. The magick of Haskell works even in Java...
+
+Recently I had a discussion about the project containing terms like "academic", "unreadable" and "useless". It had something from a religious debate - my counterpart was convinced that certain code simply shouldn't be written. I must say it was an interesting experience. Maybe I should focus more on communication and documentation, even when this doesn't help with guys like him.
+
+The funny thing is, that I'm getting more and more convinced that highJ may become something more than a crazy experiment, that it starts to get "usable".
+
+# 2013-06-08 #
+
+Starting with the wiki update. Need to put up the first Java 8 based jar as well...
+
+# 2013-06-01 #
+
+Okay, this will get funny: I'll finally go to Java 8 and throw away the Java 6 stuff. This means also going through the wiki and update all the descriptions. But first I need to get the branch merged to trunk, and I hope I don't mess this up.
+
+# 2013-05-12 #
+
+I refactored the Java 8 branch a little bit, but there is so much left to do. It's time to go to Java 8, it works well and is stable, so I see no point in keeping the Java 6 compatible stuff.
+
+# 2013-02-09 #
+
+Hey, I'm back from vacation, and finally found some workarounds for some nasty compiler bugs in the Java 8 ea. After so many changes, I had to fight with SVN, too, so don't be surprised by the change list. The Java 8 version has its own branch, the trunk is unchanged so far.
+
+So how were things going? First of all, the default methods (a.k.a. "defender" or "extension methods") are a great help. Lambdas are good, too, although I had to fight with some bugs and limitations.
+
+As I really wanted to the `_` classes to become interfaces I dropped the security mechanism which prevents the creation of fake objects, e.g. you can now instantiate a `_<Maybe.µ, String>` which isn't actually a `Maybe<String>`. I think the usability gain is big enough to justify this, and you could do something like this before, just with casting or by using raw-types.
+
+I reorganized the package structure, added several new classes and substituted `F0` and `F1` by the built-in `Supplier` and `Function` interfaces. With monad-transformers I have the feeling that I push the limits, but I made some progress there, too.
+
+Overall I have the feeling that highJ becomes (almost?) usable with Java 8.
+
+# 2013-01-15 #
+
+Long time no see, but I wasn't lazy. I'm working on the Java 8 branch, and the new stuff is really fun to work with. Lambdas are great to reduce boilerplate (and I could remove a lot of my own stuff for generating functions), but the real structural improvements come from default methods. I switched from `F1` to Java's own `Function` interface without bigger problems.
+
+However I haven't commit anything yet, as I face a nasty compiler bug nobody else in the world seems to have. I'm trying out every new build, but it just doesn't work so far. If you have this ugly "arraycode A" monster yourself, and find a solution, let me know.
+
+# 2012-11-26 #
+
+Oops, incompatibilities! I just removed Java 1.7 specific stuff like `@SaveVarargs`. I think the advantages of Java 1.7 are not big enough to justify dropping Java 1.6 support. So the code is now Java 1.6 compatible, but `highj-06.jar` still needs Java 1.7. I'll publish a new jar ASAP.
+
+# 2012-11-25 #
+
+Yeah, I did it! I just committed the shiny new syntax version of the project. I'm far from finished, but I think it's time to show what I have. Sadly, my test coverage is still bad (maybe I never get the hang of TDD). Changes include:
+  * More natural syntax (the "real" class became the outer and the "witness" the inner class)
+  * left currying for two, three and four parameter type classes _by inheritance_
+  * Removed dependencies to functionaljava, used own collections
+  * Maven 3 POM instead of silly `NetBeans` project files
+
+There is a lot of usefule non-higher-kinded stuff included (like groups) and it would be cool to put this in a separate lib, but unfortunately I'm not sure what to do with my function classes, which need to be higher-kinded.
+
+# 2012-05-13 #
+
+Now I start to see how a new highJ library could look like. It is still considerably smaller than the current version, but nevertheless I'll start with a first release soon. Before I can do this, I have to think about the package structure, need to include some essential classes, and plan to increase test coverage. But fear not, I'll put a jar of the last old sources into the download section.
+
+# 2012-05-05 #
+
+It has been some time, but I didn't give up the project. I'm working on a major overhaul as hinted in the last entries. As this will be incompatible with the former version, I'll need to have a stable core first, before I kill the old code and drop in the new one. This will take time, as I want to provide my own set of collections (not as sophisticated as functionaljava, but enough to do some work). In the mean time, I have to ask for your patience.
+
+You might be interested in another project I'm participating in, a language called [Frege](http://code.google.com/p/frege/), which is very similar to Haskell, but running on the JVM.
+
+# 2012-01-22 #
+
+I'm still evaluating the possibilities mentioned int the last entry. It seems that I'll go that route (except the idea with the "core" interfaces part). I'm dedicated to have a solid foundation, so I won't push out anything until I'm sure it works better as the old stuff.
+
+Dropping the functionaljava dependencies gives me a lot of freedom, but means a lot of work for building my own data types. If possible, I'll provide adapters to functionaljava in a separate jar. Further I think Google Guice support would be a nice addition, so I think about adding a Module for type class injection in another separate jar.
+
+# 2011-09-18 #
+
+No changes in the library, but I'm playing around with several changes bundled in a high2 project:
+  * make `_` non-final, remove the data
+  * extend `_` directly, e.g. `class List<X> extends _<List.Of, X>` where `List.Of` is an inner static class only `List` can instantiate
+  * do the same for `__`, but derive it from `_` for "automatic" left-currying of that type: `class __<X, A, B> extends _<__.Curry<X,A>, B>`
+  * For a typeclass `Foo` I have an interface `FooCore` with just the essential methods, an interface `Foo` extending it with other useful methods, and a `FooImpl` class, which takes a `FooCore` as constructor argument and implements all methods using it. Seems to be quite flexible.
+
+In highj2 I don't rely on functionaljava any longer, and I use Java 7. I'll see if something useful comes out of this (the lazy lists are at least interesting). If this is the case, I'll create a new branch, so no "old" highj code will be lost.
+
+# 2011-08-25 #
+
+I changed `SetOf` to use `java.util.Set`s, added `IteratorOf`, and added `Applicative` instances for both. Note that `IteratorApplicative` behaves like a Haskell `ZipList` applicative instance, not like a list. I stopped the infinite stream experiment, iterators should be good enough for most purposes.
+
+I did some experiments with Java 7, but decided that it's too soon to abandon Java 5 and 6 support.
+
+Regarding the subclassing idea I might switch to a dual approach: Allow it where it makes sense, e.g. when I can implement an interface and delegate all the stuff, but keep the wrapping approach (e.g. for the functional java classes) working. This needs definitely more thinking...
+
+# 2011-07-18 #
+
+Hey, I'm still alive. Made some small changes in `Comonad`s, added some `PairOf` instances. There is a class for infinite streams in the pipe, but I'm not sure if this is a good idea.
+
+I was pondering a lot about the future of highJ lately. It would be really useful to make the data types subclasses of the underscore-class, e.g. have something like `List<A> extends _<List.Of, A>`, which mean you can use the instances in the type classes without wrapping (unwrapping would be still required, though). But this would mean breaking with Functional Java, which is definitely a Bad Thing (tm). So I'm between a rock and a hard place...
+
+Oh, I added a new jar (version 0.5) since the old one was old...
+
+# 2011-06-13 #
+
+I had yesterday problems with SVN. I _think_ I got everything right now, but if you encounter anything strange, please let me know.
+
+# 2011-06-10 #
+
+Changed do-notation to six variables. The signatures are really insane, but it seems to work well...
+
+# 2011-06-06 #
+
+Uploaded highj-0.4.jar
+
+# 2011-06-05 #
+
+I started an experiment to simulate Haskell's do-notation. You can use `highj.example.DoTest` as starting point. Currently only two "variables" are supported, but I'm pondering about ways to increase that number without combinatoric explosion...
+
+Furthermore, highJ has a new logo. Thank you, Sabine!
+
+# 2011-06-04 #
+
+The transition to [semigroupoids](http://hackage.haskell.org/package/semigroupoids-1.2.2) is nearly finished (the `Foldable` stuff isn't adapted yet). I changed from `Copointed` to `Extend` and adapted `Comonad`. Test coverage increases slowly. Next thing I want to work on are type-classes extending `Monad` and `Arrow`, but I'm still not sure how to avoid code duplication. Need more instances, too.
+
+I'm looking for a good, real world example I could translate.
+
+Fun fact: Today I tried to make an UML from highJ using ArgoUML, but it choked. Filed an issue...
+
+# 2011-05-30 #
+
+I worked on the semigroupoid transition last weekend. I _think_ I rewired everything correctly so far. I'll concentrate on test coverage now. There are just a few additional type classes I want to include (`Monad` and `Arrow` extensions, `Foldable` stuff). After this, I think I'll add some more interesting instances like Sets and Maps.
+
+# 2011-05-28 #
+
+I found out that it is hard to stay consistent given all the "historical" quirks in Haskell. Fortunately I got pointed to the semigroupoid Haskell package which tries to overcome these gaps, and has a solid theoretical background. It contains a nice [overview of the type class hierarchy](http://hackage.haskell.org/package/semigroupoids-1.2.2), which will be my new treasure map. I got a very friendly response from the maintainer of that package, Edward Kmett, so I can get help when I'm really stuck.
+
+I'll start to refactor the type class part right now, so you before you rely on anything in the current structure, please take a look at the semigroupoid package description in order to see if that part will change or not.

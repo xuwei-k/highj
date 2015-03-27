@@ -1,0 +1,18 @@
+# Open Questions #
+
+## Monads Package ##
+
+  * What to do with the infamous Monad.fail method?
+  * Which monad extension would be useful (e.g. `MonadFix`)?
+
+## Type Classes ##
+
+  * Which other data type classes would be useful?
+
+## Examples ##
+
+  * What would be a good, non-trivial example? Maybe something from Haskell can be translated (but lazyness could be an issue)?
+
+## Do notation ##
+
+  * To do or not to do?

@@ -1,0 +1,23 @@
+# Type Constructors #
+
+I call classes like `List` or `T2` type constructors. The term "type constructor" requires an explanation for people with OO background: If you think about it, you'll come to the conclusion that `List` is not a real "type", because you don't create `List` instances (or at least you shouldn't, as raw types in Java are an abomination). It's more like a kind of function waiting for a type parameter to **produce** a type, e.g. `List<String>`. So the real type is something like `List<String>`, and `List` can be use to "construct" such a type.
+
+Now in highJ the "real" types look like `_<List.µ, String>` because we need to simulate higher order polymorphism, and the `µ` is used to identify these types. That's why I call these inner `µ` classes "witnesses" of the type constructor. Because these inner classes are a small (but important) detail of the mechanism, and shouldn't distract from the "real" type, I utilized the Greek letter used to abbreviate "micro" - something really small.
+
+In cases where static function act like constructors, I break with Java naming conventions and use upper case identifiers, e.g. `static <A> Maybe<A> Maybe.Just(A value)`. However I'm pondering about using `static <A> Maybe<A> Maybe.newJust(A value)`, which shows clearly the intent of the method, and doesn't break the conventions.
+
+# Higher Kinded Types #
+
+The higher kinded objects of type `_`, `__` etc shouldn't be pronounced. They are necessary part of the mechanism, but have little own behavior. I chose that strange identifiers intentionally in order to keep them short and almost "invisible", so the attention is drawn to the more interesting type constructor name.
+
+# Type Classes #
+
+Type class and method names follow the Haskell naming conventions, if possible. If there is a symbolic name and an alphanumeric name, of course I chose the alphanumeric one. If there is some standard pronunciation for a symbolic name, I used this (e.g. `bind` for `>>=`). Else I try to spell out the symbols (e.g. `left$` for `<$`). Symmetric variants of functions are of little value in Java, so usually I didn't implement them (e.g. there is no `<=<` in Monad, because there is already a `>=>` called `kleisli`). If the same function is defined multiple times, I usually pick the most basic one I can spell (e.g. there is a `pure` in `Applicative`, but no `return` in `Monad`, or an `ap` in `Apply`, which originally comes from `Monad`, but is the same as `<*>`)
+
+Sometimes I unified some functions that are separated for  "historical" reasons in Haskell (e.g. `lift2` instead of `liftA2` and `liftM2`). I tried to introduce functions in the type class hierarchy as early as possible (e.g. `lift` in `Functor`, not in `Applicative` or `Monad`). In case of a name-clash with a Java keyword, I appended the first letter of the type class, e.g. `Functor.voidF`.
+
+Sometimes type classes may return other type classes, e.g an `Arrow` may return an `Applicative` instance. Due to currying it would be difficult and confusing to implement these relationships using inheritance.
+
+# Curried Types #
+
+You can use a `__<X,A,B>` directly in a type class which expects a type with only one type parameter, like `Functor`, as it is a "left curried" subclass of `_` (to be precise `class __<X, A, B> extends _<__.µ<X, A>, B>`). There are "underscore classes" for up to 4 parameters, but I spare you the type signatures. As in Haskell, you don't have "automatic" right currying of types, but of course it can be simulated by wrappers.

@@ -1,0 +1,51 @@
+# The Problem #
+
+The problem is that Java doesn't support higher order type polymorphism ("higher kinded types", as Scala calls it). E.g. it's easy to write a functor for a _given_ generic class like List:
+
+```
+public class ListFunctor {
+  public <A,B> List<B> map(Function<A,B> fn, List<A> source) {
+     ...
+  }
+}
+```
+
+As you can see, a functor can "translate" the values inside a "container" using a function. Now functors are not only a useful but also a very common structure, so we would like to abstract over this concept. But in Java **you can't**. We would need something like:
+
+```
+public class Functor<X<?>> {
+  public <A,B> X<B> map(Function<A,B> fn, X<A> source) {
+     ...
+  }
+}
+```
+
+This is not possible. We can't say "regardless what `X` is, if you put an `X<A>` in `fmap`, you will get an `X<B>` back". The abstraction over A and B is not enough, we need to abstract over the container, in order to write functors for lists, sets, maps, strings, functions etc.
+
+# The Solution #
+
+The only way to simulate higher order type polymorphism in Java is to use the abstraction we already have, that is the abstraction of the the type parameters. To do this we need to separate the "container type" from it's value type, and then making it a type parameter itself. So instead of `List<String>` we have something like `Something<List, String>`. Now the container is independent from it's value, and we can abstract over it.
+
+In order to make things more readable and to draw the attention to `List` instead of `Something`, I used `_` (underscore) as name for the `Something`. Further I can't directly use `List` as type parameter, because it is generic. So I use a static inner class `List.µ` which serves as type parameter instead of `List`. I call this inner `µ` class the "witness" of the outer class. Classes like `List<A>` extend their version of the higher order base class, e.g. `_<List.µ,A>`, and contain a function like `public static <A> List<A> narrow(_<µ,A> value)`, which converts back to the original type.
+
+The remaining problem is security:  How can a `List.<A>narrow(value)` know for sure that `value` is internally really a list? There **are** ways to make this more safe (at least at runtime), but in the end you can't guard against casts, raw types or reflection. I found that making `_` a class is quite restricting, so I lowered the security standards and made it an interface. That means if you write a class like class `Foo<A> extends _<List.µ, A>`, and use it with highJ's type-classes, it will very likely blow up with a `ClassCastException`.
+
+As long as you don't want to implement a type constructor yourself, you don't need to know such details. The important thing is that we can finally write a general functor interface, and implement it for arbitrary type constructors:
+
+```
+public interface Functor<X> {
+  public <A,B> _<X,B> map(Function<A,B> fn, _<X,A> source);
+}
+
+public class ListFunctor implements Functor<List.µ> {
+  public <A,B> _<List.µ, B> map(Function<A,B> fn, _<List.µ, A> source) {
+     ...
+  }
+}
+```
+
+Everything else in highJ follows this scheme.
+
+For classes with two type arguments there is a `__` (2 underscores) wrapper interface as "curried" type of `_`, so you can write functor instances for types like `Either<A,B>` as well. If you want, you can go fancy with the classes `___` and `____` (3 and 4 underscores).
+
+I know the short names like `_` and `µ` are confusing at first, but the type signatures are already rather long and I didn't want to make them even longer. After a short time these symbols really help to glance over some code and to "see" what is important and what is just "library noise" which can usually be ignored.

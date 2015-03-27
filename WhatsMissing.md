@@ -1,0 +1,21 @@
+# What's Missing #
+
+## Tests ##
+
+Tests, tests, tests.
+
+## Monad Subclasses ##
+
+So far, there is only `MonadZero` and `MonadPlus`.
+
+## Arrow Subclasses ##
+
+Situation is similar to monad subclasses.
+
+## Monad Transformers ##
+
+Seems to be a must, especially `StateT` and `ContT`. Very complicated stuff (for me), even for `MaybeT`.
+
+## Do Notation ##
+
+I had something ugly in the old version. Maybe I should review the concept, and give it another spin...
