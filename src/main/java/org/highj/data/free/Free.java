@@ -2,8 +2,11 @@ package org.highj.data.free;
 
 import org.highj._;
 import org.highj.data.collection.Either;
+import org.highj.data.collection.Maybe;
 import org.highj.data.functions.F0;
 import org.highj.typeclass1.functor.Functor;
+import org.highj.typeclass1.monad.Applicative;
+
 import java.util.function.Function;
 
 public abstract class Free<F, A> implements _<Free<F, ?>, A> {
@@ -17,12 +20,16 @@ public abstract class Free<F, A> implements _<Free<F, ?>, A> {
         return new Done<>(b);
     }
 
-    public static <G, B> Free<G, B> liftF(final _<G, B> value, final Functor<G> G) {
-        return new Suspend<>(G.map(Done::new, value));
+    public static <G, B> Free<G, B> liftF(final _<G, B> value) {
+        return new Suspend<>(value);
     }
 
-    public static <G, B> Free<G, B> suspend(final _<G, Free<G, B>> b) {
-        return new Suspend<>(b);
+    public static <G, A> Free<G, A> roll(final _<G, Free<G, A>> f) {
+        return Free.liftF(f).flatMap(a -> a);
+    }
+
+    public static <G, B> Free<G, B> suspend(final Free<G, B> b, final Applicative<G> F) {
+        return liftF(F.pure(Maybe.Nothing())).flatMap(a -> narrow(b));
     }
 
     public static <G, B> Free<G, B> narrow(final _<Free<G, ?>, B> f) {
@@ -46,13 +53,13 @@ public abstract class Free<F, A> implements _<Free<F, ?>, A> {
             if (current instanceof Done) {
                 return Either.newRight(current.asDone().a);
             } else if (current instanceof Suspend) {
-                return Either.newLeft(current.asSuspend().a);
+                return Either.newLeft(F.map(Free::done, current.asSuspend().a));
             } else {
                 final Gosub<F, X1, A> gosub1 = current.asGosub();
                 if (gosub1.a instanceof Done) {
                     current = gosub1.f.apply(gosub1.a.asDone().a);
                 } else if (gosub1.a instanceof Suspend) {
-                    return Either.newLeft(F.map(o -> o.flatMap(gosub1.f), gosub1.a.asSuspend().a));
+                    return Either.newLeft(F.map(gosub1.f, gosub1.a.asSuspend().a));
                 } else {
                     final Gosub<F, X2, X1> gosub2 = gosub1.a.asGosub();
                     current = gosub2.a.flatMap(o ->
@@ -100,9 +107,9 @@ public abstract class Free<F, A> implements _<Free<F, ?>, A> {
     }
 
     private static final class Suspend<F, A> extends Free<F, A> {
-        private final _<F, Free<F, A>> a;
+        private final _<F, A> a;
 
-        private Suspend(final _<F, Free<F, A>> a) {
+        private Suspend(final _<F, A> a) {
             this.a = a;
         }
 
@@ -127,8 +134,8 @@ public abstract class Free<F, A> implements _<Free<F, ?>, A> {
         }
     }
 
-    public static <A> Free<F0.μ, A> suspendF0(final F0<Free<F0.μ, A>> f) {
-        return Free.suspend(f);
+    public static <A> Free<F0.μ, A> rollF0(final F0<Free<F0.μ, A>> f) {
+        return Free.liftF(f).flatMap(a -> a);
     }
 
     public static <A> A runF0(final Free<F0.μ, A> f) {

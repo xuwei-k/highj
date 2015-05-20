@@ -11,8 +11,8 @@ public class FreeTest {
             return Free.done(2L);
         } else {
             return
-            Free.suspendF0(() -> fib(n - 1)).flatMap(x ->
-                Free.suspendF0(() -> fib(n - 2)).map(y ->
+            Free.rollF0(() -> fib(n - 1)).flatMap(x ->
+                Free.rollF0(() -> fib(n - 2)).map(y ->
                     x + y
                 )
             );
